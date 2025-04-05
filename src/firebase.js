@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 export const app = initializeApp ({
   apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
@@ -10,3 +11,6 @@ export const app = initializeApp ({
   appId: process.env.REACT_APP_FIREBASE_MESSAGING_APP_ID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 });
+
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
