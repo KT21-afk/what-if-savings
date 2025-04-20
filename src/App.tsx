@@ -1,10 +1,11 @@
-import React, {useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import {useEffect, useState } from "react";
+import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { auth } from "./firebase";
 import Login from "./components/Login";
+import SavingsForm from "./components/SavingsForm";
 
-function App() {
-  const [user, setUser] = useState(null);
+const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
 
   // ログアウト処理
   const handleLogout  = async () => {
@@ -30,8 +31,7 @@ function App() {
       {user ? (
         <div className="text-center mt-10">
         <p>こんにちは、{user.displayName} さん！</p>
-        <img src={user.photoURL} alt="User Avatar" className="rounded-full w-16 h-16 mx-auto" />
-        <p>{user.email}</p>
+        <SavingsForm />
 
         {/* ログアウトボタン */}
         <button 

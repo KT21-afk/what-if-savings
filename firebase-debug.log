@@ -1,0 +1,52 @@
+[debug] [2025-04-06T01:43:20.448Z] ----------------------------------------------------------------------
+[debug] [2025-04-06T01:43:20.453Z] Command:       /Users/kiratakuya/.nodebrew/node/v22.14.0/bin/node /Users/kiratakuya/.nodebrew/current/bin/firebase serve
+[debug] [2025-04-06T01:43:20.453Z] CLI Version:   14.1.0
+[debug] [2025-04-06T01:43:20.454Z] Platform:      darwin
+[debug] [2025-04-06T01:43:20.454Z] Node Version:  v22.14.0
+[debug] [2025-04-06T01:43:20.454Z] Time:          Sun Apr 06 2025 10:43:20 GMT+0900 (Japan Standard Time)
+[debug] [2025-04-06T01:43:20.454Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-06T01:43:20.956Z] Object "/hosting" in "firebase.json" has unknown property: {"additionalProperty":"rewrite"}
+[debug] [2025-04-06T01:43:20.957Z] Field "/hosting" in "firebase.json" is possibly invalid: must be array
+[debug] [2025-04-06T01:43:20.957Z] Field "/hosting" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2025-04-06T01:43:20.966Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-06T01:43:20.967Z] > authorizing via signed-in user (hand.0126takuya@gmail.com)
+[debug] [2025-04-06T01:43:20.967Z] [iam] checking project what-if-savings for permissions ["firebase.projects.get"]
+[debug] [2025-04-06T01:43:20.968Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:20.968Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:20.969Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings:testIamPermissions [none]
+[debug] [2025-04-06T01:43:20.969Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings:testIamPermissions x-goog-quota-user=projects/what-if-savings
+[debug] [2025-04-06T01:43:20.970Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-04-06T01:43:21.766Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings:testIamPermissions 200
+[debug] [2025-04-06T01:43:21.767Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-04-06T01:43:21.767Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:21.767Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:21.767Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings [none]
+[debug] [2025-04-06T01:43:21.964Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings 200
+[debug] [2025-04-06T01:43:21.964Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/what-if-savings {"projectNumber":"173304436012","projectId":"what-if-savings","lifecycleState":"ACTIVE","name":"What if savings","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-03-29T00:25:20.955277Z"}
+[info] 
+[info] === Serving from '/Users/kiratakuya/dev/what_if_savings'...
+[info] 
+[debug] [2025-04-06T01:43:21.971Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:21.971Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:21.973Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/what-if-savings/sites 
+[debug] [2025-04-06T01:43:22.785Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/what-if-savings/sites 200
+[debug] [2025-04-06T01:43:22.785Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/what-if-savings/sites {"sites":[{"name":"projects/what-if-savings/sites/what-if-savings","defaultUrl":"https://what-if-savings.web.app","appId":"1:173304436012:web:f8c3a6f0c227f1b53e8889","type":"DEFAULT_SITE"}]}
+[debug] [2025-04-06T01:43:22.786Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:22.786Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:22.786Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings/webApps/1:173304436012:web:f8c3a6f0c227f1b53e8889/config [none]
+[debug] [2025-04-06T01:43:23.807Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings/webApps/1:173304436012:web:f8c3a6f0c227f1b53e8889/config 200
+[debug] [2025-04-06T01:43:23.807Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings/webApps/1:173304436012:web:f8c3a6f0c227f1b53e8889/config {"projectId":"what-if-savings","appId":"1:173304436012:web:f8c3a6f0c227f1b53e8889","storageBucket":"what-if-savings.firebasestorage.app","apiKey":"AIzaSyBFMFJkiH6iOiH-cjM-WeenpqMDnirA20M","authDomain":"what-if-savings.firebaseapp.com","messagingSenderId":"173304436012","measurementId":"G-XZ1FHWRTSG"}
+[debug] [2025-04-06T01:43:23.836Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:23.836Z] Checked if tokens are valid: true, expires at: 1743905049672
+[debug] [2025-04-06T01:43:23.837Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings [none]
+[debug] [2025-04-06T01:43:24.211Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings 200
+[debug] [2025-04-06T01:43:24.211Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/what-if-savings {"projectId":"what-if-savings","projectNumber":"173304436012","displayName":"What if savings","name":"projects/what-if-savings","resources":{"hostingSite":"what-if-savings"},"state":"ACTIVE","etag":"1_511811ec-c078-4472-ab8d-81751ddb6ab9"}
+[info] i  hosting[what-if-savings]: Serving hosting files from: build {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mbuild\u001b[22m"}}
+[info] ✔  hosting[what-if-savings]: Local server: http://localhost:5002 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://localhost:5002\u001b[22m\u001b[24m"}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:27 +0000] "GET / HTTP/1.1" 200 644 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:27 +0000] \"GET / HTTP/1.1\" 200 644 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:27 +0000] "GET /static/css/main.e6c13ad2.css HTTP/1.1" 200 337 "http://localhost:5002/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:27 +0000] \"GET /static/css/main.e6c13ad2.css HTTP/1.1\" 200 337 \"http://localhost:5002/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:28 +0000] "GET /static/js/main.fa6457ec.js HTTP/1.1" 200 - "http://localhost:5002/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:28 +0000] \"GET /static/js/main.fa6457ec.js HTTP/1.1\" 200 - \"http://localhost:5002/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:28 +0000] "GET /manifest.json HTTP/1.1" 200 492 "http://localhost:5002/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:28 +0000] \"GET /manifest.json HTTP/1.1\" 200 492 \"http://localhost:5002/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:28 +0000] "GET /favicon.ico HTTP/1.1" 200 - "http://localhost:5002/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:28 +0000] \"GET /favicon.ico HTTP/1.1\" 200 - \"http://localhost:5002/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [06/Apr/2025:01:43:28 +0000] "GET /logo192.png HTTP/1.1" 200 5347 "http://localhost:5002/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [06/Apr/2025:01:43:28 +0000] \"GET /logo192.png HTTP/1.1\" 200 5347 \"http://localhost:5002/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\""}}
