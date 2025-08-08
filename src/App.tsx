@@ -26,6 +26,11 @@ const App: React.FC = () => {
     setGoalsUpdateTrigger(prev => prev + 1);
   };
 
+  // フィードバックデータの更新をトリガー
+  const triggerFeedbackUpdate = () => {
+    setFeedbackUpdateTrigger(prev => prev + 1);
+  };
+
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -162,7 +167,7 @@ const App: React.FC = () => {
                 {activeTab === "savings" && <SavingsForm onGoalsUpdate={triggerGoalsUpdate} />}
                 {activeTab === "goals" && <GoalForm onGoalsUpdate={triggerGoalsUpdate} />}
                 {activeTab === "goalList" && <GoalList updateTrigger={goalsUpdateTrigger} />}
-                {activeTab === "feedback" && <FeedbackList updateTrigger={feedbackUpdateTrigger} />}
+                {activeTab === "feedback" && <FeedbackList updateTrigger={feedbackUpdateTrigger} onFeedbackUpdate={triggerFeedbackUpdate} />}
                 {activeTab === "userSettings" && <UserSettings />}
                 {activeTab === "feedbackAdmin" && isAdmin && <FeedbackAdmin updateTrigger={feedbackUpdateTrigger} />}
                 {activeTab === "userManagement" && isAdmin && <UserManagement updateTrigger={feedbackUpdateTrigger} />}

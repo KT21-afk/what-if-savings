@@ -5,6 +5,8 @@ import { Goal } from "../type/Goal";
 import Toast from "./Toast";
 import { useNumberInput } from "../hooks/useNumberInput";
 import { LIMITS } from "../constants/limits";
+import { sanitizeInput, limitLength } from "../utils/sanitize";
+import { VALIDATION_RULES } from "../constants/validation";
 
 interface GoalFormProps {
   onGoalsUpdate?: () => void;
@@ -58,9 +60,22 @@ const GoalForm: React.FC<GoalFormProps> = ({ onGoalsUpdate }) => {
       return;
     }
 
+    // 入力値の検証とサニタイズ
+    const sanitizedTitle = sanitizeInput(limitLength(title.trim(), VALIDATION_RULES.GOAL_TITLE.MAX_LENGTH));
+
+    if (sanitizedTitle.length < VALIDATION_RULES.GOAL_TITLE.MIN_LENGTH) {
+      showToast("目標のタイトルを入力してください", "error");
+      return;
+    }
+
+    if (!VALIDATION_RULES.GOAL_TITLE.PATTERN.test(sanitizedTitle)) {
+      showToast("目標のタイトルに改行文字は使用できません", "error");
+      return;
+    }
+
     const targetAmount = targetAmountInput.getValue();
-    if (targetAmount <= 0) {
-      showToast("目標金額を入力してください", "error");
+    if (targetAmount < VALIDATION_RULES.GOAL_AMOUNT.MIN || targetAmount > VALIDATION_RULES.GOAL_AMOUNT.MAX) {
+      showToast(`目標金額は${VALIDATION_RULES.GOAL_AMOUNT.MIN}円以上${VALIDATION_RULES.GOAL_AMOUNT.MAX.toLocaleString()}円以下で入力してください`, "error");
       return;
     }
 
@@ -102,7 +117,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ onGoalsUpdate }) => {
 
     const data: Goal = {
       userId: user.uid,
-      title,
+      title: sanitizedTitle,
       targetAmount: targetAmount,
       currentAmount: currentAmount,
       deadline: deadline ? Timestamp.fromDate(new Date(deadline)) : Timestamp.now(),

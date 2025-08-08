@@ -7,9 +7,10 @@ import FeedbackForm from "./FeedbackForm";
 
 interface FeedbackListProps {
   updateTrigger?: number;
+  onFeedbackUpdate?: () => void;
 }
 
-const FeedbackList: React.FC<FeedbackListProps> = ({ updateTrigger = 0 }) => {
+const FeedbackList: React.FC<FeedbackListProps> = ({ updateTrigger = 0, onFeedbackUpdate }) => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState<Feedback["category"] | "all">("all");
@@ -95,6 +96,7 @@ const FeedbackList: React.FC<FeedbackListProps> = ({ updateTrigger = 0 }) => {
   const handleFeedbackSubmitted = () => {
     fetchFeedbacks();
     setIsModalOpen(false);
+    onFeedbackUpdate?.();
   };
 
   const getCategoryLabel = (category: Feedback["category"]) => {
@@ -211,9 +213,9 @@ const FeedbackList: React.FC<FeedbackListProps> = ({ updateTrigger = 0 }) => {
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1">
                       {feedback.title}
-                      {feedback.status === "completed" && (
-                        <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                          完了
+                      {feedback.status && (
+                        <span className={`ml-2 text-xs px-2 py-1 rounded-full ${getStatusColor(feedback.status)}`}>
+                          {getStatusLabel(feedback.status)}
                         </span>
                       )}
                     </h3>
@@ -221,9 +223,8 @@ const FeedbackList: React.FC<FeedbackListProps> = ({ updateTrigger = 0 }) => {
                       {feedback.description}
                     </p>
                     <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                        {feedback.category === "feature" ? "新機能" : 
-                         feedback.category === "bug" ? "バグ修正" : "改善"}
+                      <span className={`px-2 py-1 rounded ${getCategoryColor(feedback.category)}`}>
+                        {getCategoryLabel(feedback.category)}
                       </span>
                       <span>投稿者: {feedback.userDisplayName}</span>
                       <span>{feedback.createdAt.toDate().toLocaleDateString('ja-JP')}</span>

@@ -5,6 +5,8 @@ import { Goal } from "../type/Goal";
 import Toast from "./Toast";
 import { useNumberInput } from "../hooks/useNumberInput";
 import { LIMITS } from "../constants/limits";
+import { sanitizeInput, limitLength } from "../utils/sanitize";
+import { VALIDATION_RULES } from "../constants/validation";
 
 interface SavingsFormProps {
   onGoalsUpdate?: () => void;
@@ -80,7 +82,24 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
       return;
     }
 
+    // 入力値の検証とサニタイズ
+    const sanitizedItemName = sanitizeInput(limitLength(itemName.trim(), VALIDATION_RULES.SAVING_ITEM_NAME.MAX_LENGTH));
+
+    if (sanitizedItemName.length < VALIDATION_RULES.SAVING_ITEM_NAME.MIN_LENGTH) {
+      showToast("我慢した物を入力してください", "error");
+      return;
+    }
+
+    if (!VALIDATION_RULES.SAVING_ITEM_NAME.PATTERN.test(sanitizedItemName)) {
+      showToast("我慢した物に改行文字は使用できません", "error");
+      return;
+    }
+
     const amount = amountInput.getValue();
+    if (amount < VALIDATION_RULES.SAVING_AMOUNT.MIN || amount > VALIDATION_RULES.SAVING_AMOUNT.MAX) {
+      showToast(`金額は${VALIDATION_RULES.SAVING_AMOUNT.MIN}円以上${VALIDATION_RULES.SAVING_AMOUNT.MAX.toLocaleString()}円以下で入力してください`, "error");
+      return;
+    }
     setLoading(true);
     let achieved = false;
     try {
@@ -105,7 +124,7 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
       // もしも貯金を登録
       const savingData = {
       userId: user.uid,
-        itemName: itemName.trim(),
+        itemName: sanitizedItemName,
         amount: amount,
         goalId: goalId,
       timestamp: Timestamp.now(),

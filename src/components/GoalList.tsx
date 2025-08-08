@@ -27,7 +27,6 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
   });
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isReordered, setIsReordered] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "completed" | "incomplete">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -92,7 +91,6 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
 
   useEffect(() => {
     fetchGoals();
-    setIsReordered(false); // データ再取得時は並び替えフラグをリセット
   }, [updateTrigger]);
 
   function DraggableGoal({goal, children}: {goal: Goal, children: React.ReactNode}) {
@@ -116,13 +114,13 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
       }
     };
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = () => {
       // マウスダウン時にドラッグ開始フラグをリセット
       setIsDraggingStarted(false);
       setMouseDownTime(Date.now());
     };
 
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = () => {
       // マウスアップ時に短いクリックかどうかを判定
       const clickDuration = Date.now() - mouseDownTime;
       if (clickDuration < 200 && !isDraggingStarted) {
@@ -188,9 +186,6 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
     const oldIndex = goals.findIndex(g => g.id === active.id);
     const newIndex = goals.findIndex(g => g.id === over.id);
     const newGoals = arrayMove(goals, oldIndex, newIndex);
-    
-    // 並び替えフラグを設定
-    setIsReordered(true);
     
     // ローカル状態を即座に更新
     setGoals(newGoals);

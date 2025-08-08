@@ -4,6 +4,9 @@ import { db, auth } from "../firebase";
 import { Feedback } from "../type/Feedback";
 import Toast from "./Toast";
 import { LIMITS } from "../constants/limits";
+import { sanitizeInput, limitLength } from "../utils/sanitize";
+import { VALIDATION_RULES } from "../constants/validation";
+import { getSafeErrorMessage } from "../utils/errorHandler";
 
 interface FeedbackFormProps {
   onFeedbackSubmitted?: () => void;
@@ -63,6 +66,30 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
       return;
     }
 
+    // 入力値の検証とサニタイズ
+    const sanitizedTitle = sanitizeInput(limitLength(title.trim(), VALIDATION_RULES.FEEDBACK_TITLE.MAX_LENGTH));
+    const sanitizedDescription = sanitizeInput(limitLength(description.trim(), VALIDATION_RULES.FEEDBACK_DESCRIPTION.MAX_LENGTH));
+
+    if (sanitizedTitle.length < VALIDATION_RULES.FEEDBACK_TITLE.MIN_LENGTH) {
+      showToast("タイトルを入力してください", "error");
+      return;
+    }
+
+    if (sanitizedDescription.length < VALIDATION_RULES.FEEDBACK_DESCRIPTION.MIN_LENGTH) {
+      showToast("説明を入力してください", "error");
+      return;
+    }
+
+    if (!VALIDATION_RULES.FEEDBACK_TITLE.PATTERN.test(sanitizedTitle)) {
+      showToast("タイトルに改行文字は使用できません", "error");
+      return;
+    }
+
+    if (!VALIDATION_RULES.FEEDBACK_DESCRIPTION.PATTERN.test(sanitizedDescription)) {
+      showToast("説明に改行文字は使用できません", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       // ユーザーの投稿数をチェック
@@ -80,11 +107,12 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
       const data: Omit<Feedback, "id" | "status"> = {
         userId: user.uid,
         userDisplayName: user.displayName || "匿名ユーザー",
-        title: title.trim(),
-        description: description.trim(),
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         category,
         votes: 0,
         voters: [],
+
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       };
@@ -98,12 +126,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
       setUserFeedbackCount(prev => prev + 1);
       onFeedbackSubmitted?.();
     } catch (error: unknown) {
-      console.error("改善要望投稿エラー:", error);
-      if (error instanceof Error) {
-        showToast(`投稿に失敗しました: ${error.message}`, "error");
-      } else {
-        showToast("投稿に失敗しました: 不明なエラーが発生しました", "error");
-      }
+      const errorMessage = getSafeErrorMessage(error, "改善要望投稿");
+      showToast(`投稿に失敗しました: ${errorMessage}`, "error");
     } finally {
       setLoading(false);
     }

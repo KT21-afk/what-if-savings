@@ -6,6 +6,9 @@ import PasswordVisibilityIcon from "./PasswordVisibilityIcon";
 import GoogleIcon from "./GoogleIcon";
 import TermsOfService from "./TermsOfService";
 import PrivacyPolicy from "./PrivacyPolicy";
+import { sanitizeInput, limitLength, isValidEmail, isStrongPassword } from "../utils/sanitize";
+import { VALIDATION_RULES } from "../constants/validation";
+import { getSafeErrorMessage } from "../utils/errorHandler";
 
 const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -48,13 +51,8 @@ const Login: React.FC = () => {
       setResetEmail("");
     } catch (error: any) {
       console.error("パスワードリセットエラー:", error);
-      if (error.code === 'auth/user-not-found') {
-        showToast("このメールアドレスは登録されていません", "error");
-      } else if (error.code === 'auth/invalid-email') {
-        showToast("無効なメールアドレスです", "error");
-      } else {
-        showToast("パスワードリセットメールの送信に失敗しました", "error");
-      }
+      const errorMessage = getSafeErrorMessage(error, "パスワードリセット");
+      showToast(errorMessage, "error");
     } finally {
       setResetLoading(false);
     }
@@ -67,7 +65,8 @@ const Login: React.FC = () => {
       showToast("Googleでログインしました！", "success");
     } catch (error: any) {
       console.error("Googleログインエラー:", error);
-      showToast(`ログインに失敗しました: ${error.message}`, "error");
+      const errorMessage = getSafeErrorMessage(error, "Googleログイン");
+      showToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -86,18 +85,7 @@ const Login: React.FC = () => {
       showToast("ログインしました！", "success");
     } catch (error: any) {
       console.error("ログインエラー:", error);
-      let errorMessage = "ログインに失敗しました";
-      
-      if (error.code === 'auth/user-not-found') {
-        errorMessage = "このメールアドレスは登録されていません。";
-      } else if (error.code === 'auth/invalid-credential') {
-        errorMessage = "パスワードが間違っています。";
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = "無効なメールアドレスです。";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+      const errorMessage = getSafeErrorMessage(error, "ログイン");
       showToast(errorMessage, "error");
     } finally {
       setLoading(false);
@@ -111,13 +99,32 @@ const Login: React.FC = () => {
       return;
     }
 
+    if (!agreeToTerms) {
+      showToast("利用規約とプライバシーポリシーに同意してください", "error");
+      return;
+    }
+
     if (password !== confirmPassword) {
       showToast("パスワードが一致しません", "error");
       return;
     }
 
-    if (password.length < 6) {
-      showToast("パスワードは6文字以上で入力してください", "error");
+    // 入力値の検証とサニタイズ
+    const sanitizedEmail = sanitizeInput(limitLength(email.trim(), VALIDATION_RULES.EMAIL.MAX_LENGTH));
+    const sanitizedDisplayName = sanitizeInput(limitLength(displayName.trim(), VALIDATION_RULES.DISPLAY_NAME.MAX_LENGTH));
+
+    if (!isValidEmail(sanitizedEmail)) {
+      showToast("有効なメールアドレスを入力してください", "error");
+      return;
+    }
+
+    if (sanitizedDisplayName.length < VALIDATION_RULES.DISPLAY_NAME.MIN_LENGTH) {
+      showToast("表示名を入力してください", "error");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      showToast("パスワードは8文字以上で、英数字を含む必要があります", "error");
       return;
     }
 
@@ -130,7 +137,7 @@ const Login: React.FC = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, {
-        displayName: displayName
+        displayName: sanitizedDisplayName
       });
 
       // Firestoreのユーザー情報更新
@@ -139,8 +146,8 @@ const Login: React.FC = () => {
       
       await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
-        displayName: displayName,
-        email: userCredential.user.email,
+        displayName: sanitizedDisplayName,
+        email: sanitizedEmail,
         role: "user",
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
@@ -156,18 +163,7 @@ const Login: React.FC = () => {
       setIsSignUp(false);
     } catch (error: any) {
       console.error("アカウント作成エラー:", error);
-      let errorMessage = "アカウント作成に失敗しました";
-      
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = "このメールアドレスは既に使用されています。";
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = "無効なメールアドレスです。";
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = "パスワードが弱すぎます。6文字以上で入力してください。";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+      const errorMessage = getSafeErrorMessage(error, "アカウント作成");
       showToast(errorMessage, "error");
     } finally {
       setLoading(false);
@@ -344,7 +340,7 @@ const Login: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    placeholder="6文字以上で入力"
+                    placeholder="8文字以上で入力"
                   />
                   <div
                     onClick={() => setShowPassword(!showPassword)}
@@ -400,15 +396,16 @@ const Login: React.FC = () => {
                 )}
               </div>
               {/* 利用規約同意 */}
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <input
                   type="checkbox"
                   id="agree-terms"
                   checked={agreeToTerms}
                   onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  required
                   className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label htmlFor="agree-terms" className="text-sm text-gray-600 dark:text-gray-400">
+                <label htmlFor="agree-terms" className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                   <span
                     onClick={() => setShowTerms(true)}
                     className="text-blue-600 hover:text-blue-500 underline cursor-pointer"
@@ -426,7 +423,7 @@ const Login: React.FC = () => {
               
               <button
                 onClick={handleSignUp}
-                disabled={loading}
+                disabled={loading || !agreeToTerms}
                 className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-all disabled:opacity-50"
               >
                 {loading ? "作成中..." : "アカウント作成"}
