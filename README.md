@@ -1,54 +1,65 @@
-# React + TypeScript + Vite
+# もしも貯金アプリ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+「もしも貯金」を記録・管理するWebアプリケーションです。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 目標の設定・管理
+- 貯金記録の作成・編集・削除
+- 進捗率の自動計算
+- ユーザー認証（メール・Google）
+- フィードバックシステム
+- 管理者機能
 
-## Expanding the ESLint configuration
+## 技術スタック
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React + TypeScript
+- Vite
+- Firebase (Authentication, Firestore)
+- Tailwind CSS
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## セットアップ
+
+### 1. リポジトリのクローン
+```bash
+git clone https://github.com/KT21-afk/what-if-savings.git
+cd what-if-savings
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. 依存関係のインストール
+```bash
+npm install
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 3. 環境変数の設定
+```bash
+# .env.exampleをコピー
+cp .env.example .env
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+# .envファイルを編集してFirebase設定を入力
+# Firebaseコンソールから取得した設定値を入力してください
+```
+
+### 4. 開発サーバーの起動
+```bash
+npm run dev
+```
+
+## Firebase設定
+
+Firebaseコンソールから以下の設定値を取得して`.env`ファイルに設定してください：
+
+- `VITE_FIREBASE_APIKEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_MESSAGING_APP_ID`
+- `VITE_FIREBASE_MEASUREMENT_ID`
+
+## デプロイ
+
+```bash
+npm run build
+npm run preview
 ```
