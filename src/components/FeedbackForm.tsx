@@ -1,8 +1,9 @@
-import { useState, FormEvent } from "react";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { useState, FormEvent, useEffect } from "react";
+import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { Feedback } from "../type/Feedback";
 import Toast from "./Toast";
+import { LIMITS } from "../constants/limits";
 
 interface FeedbackFormProps {
   onFeedbackSubmitted?: () => void;
@@ -13,6 +14,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<Feedback["category"]>("feature");
   const [loading, setLoading] = useState(false);
+  const [userFeedbackCount, setUserFeedbackCount] = useState(0);
   const [toast, setToast] = useState({
     isVisible: false,
     message: "",
@@ -24,6 +26,28 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
   };
 
   const hideToast = () => setToast(prev => ({ ...prev, isVisible: false }));
+
+  // ユーザーの投稿数を取得
+  const fetchUserFeedbackCount = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const userFeedbacksQuery = query(
+        collection(db, "feedback"),
+        where("userId", "==", user.uid)
+      );
+      const userFeedbacksSnapshot = await getDocs(userFeedbacksQuery);
+      setUserFeedbackCount(userFeedbacksSnapshot.size);
+    } catch (error) {
+      console.error("投稿数取得エラー:", error);
+    }
+  };
+
+  // コンポーネントマウント時に投稿数を取得
+  useEffect(() => {
+    fetchUserFeedbackCount();
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +65,18 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
 
     setLoading(true);
     try {
+      // ユーザーの投稿数をチェック
+      const userFeedbacksQuery = query(
+        collection(db, "feedback"),
+        where("userId", "==", user.uid)
+      );
+      const userFeedbacksSnapshot = await getDocs(userFeedbacksQuery);
+      
+      if (userFeedbacksSnapshot.size >= LIMITS.MAX_FEEDBACK_PER_USER) {
+        showToast(`改善要望の投稿上限（${LIMITS.MAX_FEEDBACK_PER_USER}件）に達しています`, "error");
+        return;
+      }
+
       const data: Omit<Feedback, "id" | "status"> = {
         userId: user.uid,
         userDisplayName: user.displayName || "匿名ユーザー",
@@ -59,6 +95,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
       setTitle("");
       setDescription("");
       setCategory("feature");
+      setUserFeedbackCount(prev => prev + 1);
       onFeedbackSubmitted?.();
     } catch (error: unknown) {
       console.error("改善要望投稿エラー:", error);
@@ -74,6 +111,18 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
 
   return (
     <div className="w-full">
+      {/* 投稿状況表示 */}
+      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          投稿状況: {userFeedbackCount} / {LIMITS.MAX_FEEDBACK_PER_USER} 件
+        </p>
+        {userFeedbackCount >= LIMITS.MAX_FEEDBACK_PER_USER && (
+          <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+            投稿上限に達しています
+          </p>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="title" className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -124,10 +173,10 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onFeedbackSubmitted }) => {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || userFeedbackCount >= LIMITS.MAX_FEEDBACK_PER_USER}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50"
         >
-          {loading ? "投稿中..." : "投稿する"}
+          {loading ? "投稿中..." : userFeedbackCount >= LIMITS.MAX_FEEDBACK_PER_USER ? "投稿上限に達しています" : "投稿する"}
         </button>
       </form>
 

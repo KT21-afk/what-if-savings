@@ -109,7 +109,8 @@ const EditGoalModal: React.FC<EditGoalModalProps> = ({ goal, isOpen, onClose, on
         targetAmount: targetAmount,
         deadline: Timestamp.fromDate(new Date(deadline)),
         updatedAt: Timestamp.now(),
-        ...(goal.currentAmount < targetAmount && goal.achievedAt ? { achievedAt: null } : {})
+        ...(goal.currentAmount >= targetAmount && !goal.achievedAt ? { achievedAt: Timestamp.now() } :
+          goal.currentAmount < targetAmount && goal.achievedAt ? { achievedAt: null } : {})
       });
       // 進捗率・達成判定を再計算
       await recalcCurrentAmount();
@@ -117,7 +118,7 @@ const EditGoalModal: React.FC<EditGoalModalProps> = ({ goal, isOpen, onClose, on
       onUpdated();
       setTimeout(() => {
         onClose();
-      }, 1000);
+      }, 3000);
     } catch (error: any) {
       showToast("更新に失敗しました: " + error.message, "error");
     } finally {

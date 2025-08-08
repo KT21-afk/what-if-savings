@@ -260,7 +260,7 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
               {filteredGoals.map((goal) => {
                 const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
                 const daysLeft = calculateDaysLeft(goal.deadline);
-                const isCompleted = goal.achievedAt;
+                const isCompleted = goal.achievedAt || (goal.currentAmount >= goal.targetAmount);
                 
                 return (
                   <DraggableGoal key={goal.id} goal={goal}>

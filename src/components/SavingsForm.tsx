@@ -4,6 +4,7 @@ import { db, auth } from "../firebase";
 import { Goal } from "../type/Goal";
 import Toast from "./Toast";
 import { useNumberInput } from "../hooks/useNumberInput";
+import { LIMITS } from "../constants/limits";
 
 interface SavingsFormProps {
   onGoalsUpdate?: () => void;
@@ -15,6 +16,7 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [selectedGoalSavingsCount, setSelectedGoalSavingsCount] = useState(0);
   const [toast, setToast] = useState({
     isVisible: false,
     message: "",
@@ -29,6 +31,20 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
   };
 
   const hideToast = () => setToast(prev => ({ ...prev, isVisible: false }));
+
+  // 選択された目標の明細数を取得
+  const fetchSelectedGoalSavingsCount = async (goalId: string) => {
+    try {
+      const goalSavingsQuery = query(
+        collection(db, "savings"),
+        where("goalId", "==", goalId)
+      );
+      const goalSavingsSnapshot = await getDocs(goalSavingsQuery);
+      setSelectedGoalSavingsCount(goalSavingsSnapshot.size);
+    } catch (error) {
+      console.error("明細数取得エラー:", error);
+    }
+  };
 
   // 目標一覧を取得
   const fetchGoals = async () => {
@@ -74,6 +90,18 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
         return;
       }
 
+      // 選択された目標の明細数をチェック
+      const goalSavingsQuery = query(
+        collection(db, "savings"),
+        where("goalId", "==", goalId)
+      );
+      const goalSavingsSnapshot = await getDocs(goalSavingsQuery);
+      
+      if (goalSavingsSnapshot.size >= LIMITS.MAX_SAVINGS_PER_GOAL) {
+        showToast(`この目標の明細上限（${LIMITS.MAX_SAVINGS_PER_GOAL}件）に達しています`, "error");
+        return;
+      }
+
       // もしも貯金を登録
       const savingData = {
       userId: user.uid,
@@ -113,6 +141,7 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
       setItemName("");
       amountInput.setValue(0);
       setGoalId("");
+      setSelectedGoalSavingsCount(0);
       onGoalsUpdate?.();
     } catch (error: unknown) {
       console.error("もしも貯金登録エラー:", error);
@@ -128,7 +157,7 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <h2 className="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-white">もしも貯金を登録</h2>
+      <h2 className="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-white">貯金を登録</h2>
       <form onSubmit={handleSubmit} className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 space-y-4">
         <div>
           <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="saving-item">我慢した物</label>
@@ -160,7 +189,14 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
           <select
             id="saving-goal"
             value={goalId}
-            onChange={(e) => setGoalId(e.target.value)}
+            onChange={(e) => {
+              setGoalId(e.target.value);
+              if (e.target.value) {
+                fetchSelectedGoalSavingsCount(e.target.value);
+              } else {
+                setSelectedGoalSavingsCount(0);
+              }
+            }}
             className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white"
             required
           >
@@ -170,20 +206,32 @@ const SavingsForm: React.FC<SavingsFormProps> = ({ onGoalsUpdate }) => {
             ) : goals.length === 0 ? (
               <option disabled>目標が設定されていません</option>
             ) : (
-              goals.map((goal) => (
+              goals.filter((goal) => !goal.achievedAt).map((goal) => (
                 <option key={goal.id} value={goal.id}>
                   {goal.title} (目標: {goal.targetAmount.toLocaleString()}円)
                 </option>
               ))
             )}
           </select>
+          {goalId && (
+            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                明細数: {selectedGoalSavingsCount} / {LIMITS.MAX_SAVINGS_PER_GOAL} 件
+              </p>
+              {selectedGoalSavingsCount >= LIMITS.MAX_SAVINGS_PER_GOAL && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  明細上限に達しています
+                </p>
+              )}
+            </div>
+          )}
         </div>
         <button 
           type="submit"
-          disabled={loading}
+          disabled={loading || Boolean(goalId && selectedGoalSavingsCount >= LIMITS.MAX_SAVINGS_PER_GOAL)}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50"
           >
-          {loading ? "登録中..." : "登録"}
+          {loading ? "登録中..." : (goalId && selectedGoalSavingsCount >= LIMITS.MAX_SAVINGS_PER_GOAL) ? "明細上限に達しています" : "登録"}
         </button>
       </form>
 
