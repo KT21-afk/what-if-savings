@@ -4,6 +4,8 @@ import { auth, provider } from "../firebase";
 import Toast from "./Toast";
 import PasswordVisibilityIcon from "./PasswordVisibilityIcon";
 import GoogleIcon from "./GoogleIcon";
+import TermsOfService from "./TermsOfService";
+import PrivacyPolicy from "./PrivacyPolicy";
 
 const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -23,6 +25,8 @@ const Login: React.FC = () => {
     type: "success" as "success" | "error" | "info"
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ isVisible: true, message, type });
@@ -405,8 +409,18 @@ const Login: React.FC = () => {
                   className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="agree-terms" className="text-sm text-gray-600 dark:text-gray-400">
-                  <a href="#" className="text-blue-600 hover:text-blue-500 underline">利用規約</a>と
-                  <a href="#" className="text-blue-600 hover:text-blue-500 underline">プライバシーポリシー</a>に同意します
+                  <span
+                    onClick={() => setShowTerms(true)}
+                    className="text-blue-600 hover:text-blue-500 underline cursor-pointer"
+                  >
+                    利用規約
+                  </span>と
+                  <span
+                    onClick={() => setShowPrivacy(true)}
+                    className="text-blue-600 hover:text-blue-500 underline cursor-pointer"
+                  >
+                    プライバシーポリシー
+                  </span>に同意します
                 </label>
               </div>
               
@@ -443,8 +457,18 @@ const Login: React.FC = () => {
           {/* 利用規約・プライバシーポリシー */}
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-6">
             ログインまたはアカウント作成により、
-            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">利用規約</a>と
-            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">プライバシーポリシー</a>に同意したものとみなされます。
+            <span
+              onClick={() => setShowTerms(true)}
+              className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            >
+              利用規約
+            </span>と
+            <span
+              onClick={() => setShowPrivacy(true)}
+              className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            >
+              プライバシーポリシー
+            </span>に同意したものとみなされます。
           </p>
         </div>
 
@@ -463,6 +487,46 @@ const Login: React.FC = () => {
         onClose={hideToast}
         duration={3000}
       />
+
+      {/* 利用規約モーダル */}
+      {showTerms && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">利用規約</h2>
+                <button
+                  onClick={() => setShowTerms(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              <TermsOfService />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* プライバシーポリシーモーダル */}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">プライバシーポリシー</h2>
+                <button
+                  onClick={() => setShowPrivacy(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              <PrivacyPolicy />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
