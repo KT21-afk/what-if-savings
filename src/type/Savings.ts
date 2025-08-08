@@ -2,9 +2,8 @@ import { Timestamp } from 'firebase/firestore';
 
 export interface Savings {
   userId: string;
-  category: string;
+  goalId?: string;
   itemName: string;
   amount: number;
   timestamp: Timestamp;
-  memo?: string;
 }

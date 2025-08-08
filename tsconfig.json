@@ -11,7 +11,7 @@
     "declaration": true,
     "sourceMap": true,
     "strict": true,
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "ESNext",
     "moduleResolution": "NodeNext",
     "jsx": "react-jsx",

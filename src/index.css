@@ -1,14 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  color: #22223b;
+  background-color: #f7fafc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,54 +15,94 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #2563eb;
   text-decoration: inherit;
+  transition: color 0.2s;
 }
 a:hover {
-  color: #535bf2;
+  color: #1d4ed8;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  justify-content: center;
+  align-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: #f7fafc;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  color: #22223b;
 }
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border: none;
+  padding: 0.7em 1.4em;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background: #2563eb;
+  color: #fff;
+  box-shadow: none;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background 0.2s;
 }
 button:hover {
-  border-color: #646cff;
+  background: #1d4ed8;
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid #2563eb;
 }
 
-@media (prefers-color-scheme: light) {
+input, textarea, select {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 0.7em 1em;
+  font-size: 1em;
+  font-family: inherit;
+  color: #22223b;
+  transition: border-color 0.2s;
+  box-shadow: none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.card, .bg-white {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(30,41,59,0.04);
+}
+@media (prefers-color-scheme: dark) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: #f4f6fb;
+    background-color: #181a20;
   }
   a:hover {
-    color: #747bff;
+    color: #38bdf8;
   }
   button {
-    background-color: #f9f9f9;
+    background: #2563eb;
+    color: #fff;
+  }
+  input, textarea, select {
+    background: #23263a;
+    color: #f4f6fb;
+    border: 1px solid #334155;
+  }
+  .card, .bg-white {
+    background: #23263a;
+    color: #f4f6fb;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: #f4f6fb;
   }
 }
+
