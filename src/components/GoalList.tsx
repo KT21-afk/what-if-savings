@@ -251,7 +251,7 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
       ) : (
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredGoals.map(goal => goal.id!)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-3 pr-5">
+            <div className="space-y-3 pr-4 pl-4">
               {filteredGoals.map((goal) => {
                 const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
                 const daysLeft = calculateDaysLeft(goal.deadline);
