@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "setup": "./setup.sh",
-    "postinstall": "./scripts/auto-restore-env.sh"
+    "postinstall": "./scripts/auto-restore-env.sh",
+    "deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.4.0",
