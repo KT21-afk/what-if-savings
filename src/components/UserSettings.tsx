@@ -10,7 +10,7 @@ const UserSettings: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({

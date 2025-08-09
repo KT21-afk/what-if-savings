@@ -10,7 +10,6 @@ interface ToastProps {
 
 const Toast: React.FC<ToastProps> = ({ 
   message, 
-  type, 
   isVisible, 
   onClose, 
   duration = 3000 
