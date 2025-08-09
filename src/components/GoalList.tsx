@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, Timestamp, updateDoc, doc, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { Goal } from "../type/Goal";
 import Toast from "./Toast";
 import EditGoalModal from "./EditGoalModal";
 import GoalForm from "./GoalForm";
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 interface GoalListProps {
   updateTrigger?: number;
@@ -28,6 +25,8 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "completed" | "incomplete">("all");
+  const [sortBy, setSortBy] = useState<"deadline" | "progress" | "targetAmount">("deadline");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -72,8 +71,7 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
       }
       const q = query(
         collection(db, "goals"),
-        where("userId", "==", user.uid),
-        orderBy("order", "asc")
+        where("userId", "==", user.uid)
       );
       const querySnapshot = await getDocs(q);
       const goalsData: Goal[] = [];
@@ -93,121 +91,30 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
     fetchGoals();
   }, [updateTrigger]);
 
-  function DraggableGoal({goal, children}: {goal: Goal, children: React.ReactNode}) {
-    const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: goal.id!});
-    const [isTouching, setIsTouching] = useState(false);
-    const [isDraggingStarted, setIsDraggingStarted] = useState(false);
-    const [mouseDownTime, setMouseDownTime] = useState(0);
-    
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    const handleClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      // ドラッグが開始されていない場合のみクリックイベントを処理
-      if (!isDragging && !isDraggingStarted) {
-        setEditingGoal(goal);
-        setIsEditModalOpen(true);
-      }
-    };
-
-    const handleMouseDown = () => {
-      // マウスダウン時にドラッグ開始フラグをリセット
-      setIsDraggingStarted(false);
-      setMouseDownTime(Date.now());
-    };
-
-    const handleMouseUp = () => {
-      // マウスアップ時に短いクリックかどうかを判定
-      const clickDuration = Date.now() - mouseDownTime;
-      if (clickDuration < 200 && !isDraggingStarted) {
-        // 短いクリックの場合はモーダルを開く
-        setEditingGoal(goal);
-        setIsEditModalOpen(true);
-      }
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-      // マウスが移動した場合、ドラッグ開始とみなす
-      if (e.movementX !== 0 || e.movementY !== 0) {
-        setIsDraggingStarted(true);
-      }
-    };
-
-    const handleTouchStart = () => {
-      setIsTouching(true);
-    };
-
-    const handleTouchEnd = (e: React.TouchEvent) => {
-      e.stopPropagation();
-      if (isTouching && !isDragging) {
-        // タッチが短時間（ドラッグでない）の場合のみモーダルを開く
-        setTimeout(() => {
-          if (!isDragging) {
-            setEditingGoal(goal);
-            setIsEditModalOpen(true);
-          }
-        }, 150);
-      }
-      setIsTouching(false);
-    };
-
-    return (
-      <div 
-        ref={setNodeRef} 
-        style={style}
-        className="relative"
-      >
-        {/* ドラッグ可能なコンテンツ領域 */}
-        <div
-          {...attributes} 
-          {...listeners}
-          onClick={handleClick}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          className="cursor-pointer"
-          style={{ touchAction: 'none' }}
-        >
-          {children}
-        </div>
-      </div>
-    );
-  }
-
-  const handleDragEnd = async (event: any) => {
-    const {active, over} = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = goals.findIndex(g => g.id === active.id);
-    const newIndex = goals.findIndex(g => g.id === over.id);
-    const newGoals = arrayMove(goals, oldIndex, newIndex);
-    
-    // ローカル状態を即座に更新
-    setGoals(newGoals);
-    
-    // Firestoreのorderを更新（バックグラウンドで実行）
-    try {
-      for (let i = 0; i < newGoals.length; i++) {
-        if (newGoals[i].order !== i) {
-          await updateDoc(doc(db, "goals", newGoals[i].id!), { order: i });
-        }
-      }
-    } catch (error) {
-      console.error("並び替えの保存に失敗しました:", error);
-      showToast("並び替えの保存に失敗しました", "error");
-    }
-  };
-
   const filteredGoals = goals.filter(goal => {
     if (filterStatus === "all") return true;
     if (filterStatus === "completed") return goal.achievedAt;
     if (filterStatus === "incomplete") return !goal.achievedAt;
     return true;
+  });
+
+  // ソート機能
+  const sortedGoals = [...filteredGoals].sort((a, b) => {
+    const progressA = calculateProgress(a.currentAmount, a.targetAmount);
+    const progressB = calculateProgress(b.currentAmount, b.targetAmount);
+    
+    switch (sortBy) {
+      case "deadline":
+        const deadlineA = a.deadline.toDate().getTime();
+        const deadlineB = b.deadline.toDate().getTime();
+        return sortOrder === "asc" ? deadlineA - deadlineB : deadlineB - deadlineA;
+      case "progress":
+        return sortOrder === "asc" ? progressA - progressB : progressB - progressA;
+      case "targetAmount":
+        return sortOrder === "asc" ? a.targetAmount - b.targetAmount : b.targetAmount - a.targetAmount;
+      default:
+        return 0;
+    }
   });
 
   return (
@@ -238,29 +145,64 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
             <option value="incomplete">未達成</option>
           </select>
         </div>
+        
+        {/* ソート */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+              ソート項目
+            </label>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as "deadline" | "progress" | "targetAmount")}
+              className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white"
+            >
+              <option value="deadline">期限</option>
+              <option value="progress">進捗率</option>
+              <option value="targetAmount">目標金額</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+              並び順
+            </label>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value as "asc" | "desc")}
+              className="w-full border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white"
+            >
+              <option value="asc">昇順</option>
+              <option value="desc">降順</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {loading ? (
         <div className="text-center py-8">
           <div className="text-gray-500 dark:text-gray-400">読み込み中...</div>
         </div>
-      ) : filteredGoals.length === 0 ? (
+      ) : sortedGoals.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-gray-500 dark:text-gray-400 mb-4">対象の目標がありません</div>
         </div>
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={filteredGoals.map(goal => goal.id!)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-3 pr-4 pl-4">
-              {filteredGoals.map((goal) => {
-                const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
-                const daysLeft = calculateDaysLeft(goal.deadline);
-                const isCompleted = goal.achievedAt || (goal.currentAmount >= goal.targetAmount);
-                
-                return (
-                  <DraggableGoal key={goal.id} goal={goal}>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
-                      <div className="flex justify-between items-start mb-3">
+        <div className="space-y-3">
+          {sortedGoals.map((goal) => {
+            const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
+            const daysLeft = calculateDaysLeft(goal.deadline);
+            const isCompleted = goal.achievedAt || (goal.currentAmount >= goal.targetAmount);
+            
+            return (
+              <div 
+                key={goal.id} 
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700 cursor-pointer"
+                onClick={() => {
+                  setEditingGoal(goal);
+                  setIsEditModalOpen(true);
+                }}
+              >
+                <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1">
                             {goal.title}
@@ -282,9 +224,9 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
                             <div className="text-xs sm:text-sm text-green-600 dark:text-green-400 mb-3">
                               達成日: {goal.achievedAt!.toDate().toLocaleDateString('ja-JP')}
                             </div>
-                        </div>
+                          </div>
                         ) : (
-                        <div className="text-right">
+                          <div className="text-right">
                           <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
                             {progress.toFixed(1)}%
                           </div>
@@ -314,13 +256,10 @@ const GoalList: React.FC<GoalListProps> = ({ updateTrigger = 0 }) => {
                         期限: {goal.deadline.toDate().toLocaleDateString('ja-JP')}
                       </div>
                     </div>
-                  </DraggableGoal>
-                );
-              })}
+                  );
+                })}
             </div>
-          </SortableContext>
-        </DndContext>
-      )}
+          )}
 
       {/* モーダル */}
       {isModalOpen && (
